@@ -65,7 +65,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          mv app-debug.apk Ryzen-VPN-v0.2.0-alpha-debug.apk
-          sha256sum Ryzen-VPN-v0.2.0-alpha-debug.apk > SHA256SUMS.txt
-          gh release view v0.2.0-alpha || gh release create v0.2.0-alpha --target "${{ github.sha }}" --prerelease --title "Ryzen VPN v0.2.0-alpha" --notes "Interactive rotatable globe, country selection, city profiles, real host addresses, handshake pulse and live tunnel throughput. Import working WireGuard profiles. No hosted endpoints are bundled. Debug-signed APK; uninstall the earlier debug build if Android reports a signature mismatch. UI smoke test and lint passed."
-          gh release upload v0.2.0-alpha Ryzen-VPN-v0.2.0-alpha-debug.apk SHA256SUMS.txt --clobber
+          mv app-debug.apk Ryzen-VPN-v0.2.1-alpha-debug.apk
+          sha256sum Ryzen-VPN-v0.2.1-alpha-debug.apk > SHA256SUMS.txt
+          gh release view v0.2.1-alpha || gh release create v0.2.1-alpha --target "${{ github.sha }}" --prerelease --title "Ryzen VPN v0.2.1-alpha" --notes "Slower density-independent globe dragging, smoother country focus, drawn power icon and specific profile import errors. Import working WireGuard profiles. No hosted endpoints are bundled. Debug-signed APK; uninstall the earlier debug build if Android reports a signature mismatch. UI smoke test and lint passed."
+          gh release upload v0.2.1-alpha Ryzen-VPN-v0.2.1-alpha-debug.apk SHA256SUMS.txt --clobber
