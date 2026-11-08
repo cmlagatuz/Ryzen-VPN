@@ -183,21 +183,33 @@ class MainActivity : Activity() {
     private lateinit var importButton: Button
     private var listKey = ""
     private lateinit var brandTitle: TextView
-    private val brandText = "RYZEN / VPN"
+    private var brandText = "RYZEN / VPN"
+    private val titlePreferences by lazy { getPreferences(MODE_PRIVATE) }
+    private fun chooseNextTitle() {
+        if (brandText == "ZANTETSUKEN") {
+            brandText = "RYZEN / VPN"
+            return
+        }
+        val normalCycles = titlePreferences.getInt("normalTitleCycles", 0) + 1
+        // 5% chance per completed normal loop, guaranteed after 20 normal loops.
+        val rare = normalCycles >= 20 || kotlin.random.Random.nextInt(100) < 5
+        brandText = if (rare) "ZANTETSUKEN" else "RYZEN / VPN"
+        titlePreferences.edit().putInt("normalTitleCycles", if (rare) 0 else normalCycles).apply()
+    }
     private var brandLength = 0
     private var brandDeleting = false
     private val brandAnimation = object : Runnable {
         override fun run() {
             if (!android.animation.ValueAnimator.areAnimatorsEnabled()) {
-                brandTitle.text = brandText
+                brandTitle.text = "RYZEN / VPN"
                 return
             }
             brandLength += if (brandDeleting) -1 else 1
             brandLength = brandLength.coerceIn(0, brandText.length)
-            brandTitle.text = (brandText.take(brandLength) + "_").padEnd(brandText.length + 1, ' ')
+            brandTitle.text = (brandText.take(brandLength) + "_").padEnd(12, ' ')
             val delay = when {
                 brandLength == brandText.length -> { brandDeleting = true; 2400L }
-                brandLength == 0 -> { brandDeleting = false; 650L }
+                brandLength == 0 -> { brandDeleting = false; chooseNextTitle(); 650L }
                 brandDeleting -> 65L
                 else -> 135L
             }
