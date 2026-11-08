@@ -98,15 +98,18 @@ class VpnApp : Application() {
                     }
                     output.toByteArray()
                 }
-                val config = Config.parse(bytes.inputStream())
+                val config = try { Config.parse(bytes.inputStream()) } catch (_: Exception) {
+                    throw IllegalArgumentException("Select a valid WireGuard .conf file, not a ZIP, image or OpenVPN profile")
+                }
+                require(config.peers.size == 1) { "Profile must contain exactly one VPN server" }
                 val peer = config.peers.single()
-                require(peer.endpoint.isPresent)
+                require(peer.endpoint.isPresent) { "Profile is missing the server endpoint" }
                 val routes = peer.allowedIps.map { it.toString() }.toSet()
-                require("0.0.0.0/0" in routes && ("::/0" in routes || "0:0:0:0:0:0:0:0/0" in routes))
-                require(config.`interface`.includedApplications.isEmpty() && config.`interface`.excludedApplications.isEmpty())
+                require("0.0.0.0/0" in routes && ("::/0" in routes || "0:0:0:0:0:0:0:0/0" in routes)) { "Profile must route both IPv4 and IPv6: AllowedIPs = 0.0.0.0/0, ::/0" }
+                require(config.`interface`.includedApplications.isEmpty() && config.`interface`.excludedApplications.isEmpty()) { "Remove per-app routing exclusions from this profile" }
                 save(servers + Server(UUID.randomUUID().toString(),country,city,bytes.toString(Charsets.UTF_8)))
                 message = "Profile added · connect to verify"
-            }.onFailure { message = "Import failed · use a full-tunnel WireGuard profile" }
+            }.onFailure { message = if (it is IllegalArgumentException) it.message ?: "Invalid profile" else "Import failed · unable to read or save profile" }
             busy = false; changed()
         }
     }
@@ -229,8 +232,20 @@ class MainActivity : Activity() {
         root.addView(importButton,LinearLayout.LayoutParams(-1,dp(46)))
         rate=text("↓ — Mbps    ↑ — Mbps",14f,Color.LTGRAY)
         root.addView(rate,LinearLayout.LayoutParams(-1,dp(36)))
-        power=Button(this).apply {
-            text="⏻"; textSize=44f; setTextColor(Color.rgb(6,16,27)); setPadding(0,0,0,0)
+        power=object : Button(this) {
+            private val iconPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                color=Color.rgb(6,16,27); style=android.graphics.Paint.Style.STROKE
+                strokeCap=android.graphics.Paint.Cap.ROUND
+            }
+            override fun onDraw(canvas: android.graphics.Canvas) {
+                super.onDraw(canvas)
+                val cx=width/2f; val cy=height/2f; val r=width*.21f
+                iconPaint.strokeWidth=width*.045f
+                canvas.drawArc(cx-r,cy-r,cx+r,cy+r,-45f,270f,false,iconPaint)
+                canvas.drawLine(cx,cy-r*1.2f,cx,cy,iconPaint)
+            }
+        }.apply {
+            text=""; textSize=44f; setTextColor(Color.rgb(6,16,27)); setPadding(0,0,0,0)
             background=GradientDrawable().apply { shape=GradientDrawable.OVAL; setColor(cyan) }
             setOnClickListener {
                 if (app.up) app.disconnect() else {
