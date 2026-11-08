@@ -65,7 +65,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          mv app-debug.apk Ryzen-VPN-v0.2.2-alpha-debug.apk
-          sha256sum Ryzen-VPN-v0.2.2-alpha-debug.apk > SHA256SUMS.txt
-          gh release view v0.2.2-alpha || gh release create v0.2.2-alpha --target "${{ github.sha }}" --prerelease --title "Ryzen VPN v0.2.2-alpha" --notes "Coding-style title typing and backspacing animation, paused in background and disabled when system animations are off. Import working WireGuard profiles. No hosted endpoints are bundled. Debug-signed APK; uninstall the earlier debug build if Android reports a signature mismatch. UI smoke test and lint passed."
-          gh release upload v0.2.2-alpha Ryzen-VPN-v0.2.2-alpha-debug.apk SHA256SUMS.txt --clobber
+          mv app-debug.apk Ryzen-VPN-v0.2.3-alpha-debug.apk
+          sha256sum Ryzen-VPN-v0.2.3-alpha-debug.apk > SHA256SUMS.txt
+          gh release view v0.2.3-alpha || gh release create v0.2.3-alpha --target "${{ github.sha }}" --prerelease --title "Ryzen VPN v0.2.3-alpha" --notes "Rare ZANTETSUKEN typing animation: 5 percent chance after each normal title loop, guaranteed after twenty normal loops. Manual WireGuard import remains available. Import working WireGuard profiles. No hosted endpoints are bundled. Debug-signed APK; uninstall the earlier debug build if Android reports a signature mismatch. UI smoke test and lint passed."
+          gh release upload v0.2.3-alpha Ryzen-VPN-v0.2.3-alpha-debug.apk SHA256SUMS.txt --clobber
