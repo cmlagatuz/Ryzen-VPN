@@ -19,7 +19,6 @@ jobs:
       - name: Enable emulator acceleration
         run: |
           sudo chmod a+rw /dev/kvm
-          adb start-server
       - name: Smoke test Android UI
         uses: reactivecircus/android-emulator-runner@v2
         with:
