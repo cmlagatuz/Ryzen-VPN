@@ -5,7 +5,7 @@ permissions:
   contents: read
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -16,6 +16,10 @@ jobs:
         with:
           gradle-version: '8.9'
       - run: gradle :app:assembleDebug :app:lintDebug --stacktrace
+      - name: Enable emulator acceleration
+        run: |
+          sudo chmod a+rw /dev/kvm
+          adb start-server
       - name: Smoke test Android UI
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -23,10 +27,14 @@ jobs:
           arch: x86_64
           profile: pixel_2
           disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          emulator-boot-timeout: 600
           script: |
+            adb shell input keyevent 82
+            adb shell wm dismiss-keyguard
             adb install app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -W -n com.personal.privatevpn/.MainActivity
-            sleep 5
+            sleep 15
             adb shell uiautomator dump /sdcard/window.xml
             adb pull /sdcard/window.xml ui-smoke.xml
             grep -q 'RYZEN' ui-smoke.xml
@@ -34,6 +42,7 @@ jobs:
             adb shell screencap -p /sdcard/screen.png
             adb pull /sdcard/screen.png ui-smoke.png
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: UI-smoke
           path: |
@@ -45,7 +54,7 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
   publish:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
