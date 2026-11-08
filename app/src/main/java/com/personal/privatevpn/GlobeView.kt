@@ -51,7 +51,7 @@ class GlobeView(context: Context) : View(context) {
         val end = centers[country]
         val delta = ((end.second - startLon + 540) % 360) - 180
         spin = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 850
+            duration = 1200
             addUpdateListener {
                 val t = it.animatedValue as Float
                 longitude = startLon + delta * t
@@ -154,8 +154,8 @@ class GlobeView(context: Context) : View(context) {
             }
             MotionEvent.ACTION_MOVE -> {
                 if (hypot(event.x-downX,event.y-downY) > 10*resources.displayMetrics.density) moved = true
-                longitude = (longitude - (event.x-previousX)*.5 + 360) % 360
-                latitude = (latitude + (event.y-previousY)*.4).coerceIn(-75.0,75.0)
+                longitude = (longitude - (event.x-previousX)/resources.displayMetrics.density*.22 + 360) % 360
+                latitude = (latitude + (event.y-previousY)/resources.displayMetrics.density*.18).coerceIn(-75.0,75.0)
                 previousX = event.x; previousY = event.y
                 invalidate()
             }
