@@ -182,6 +182,28 @@ class MainActivity : Activity() {
     private lateinit var serverList: LinearLayout
     private lateinit var importButton: Button
     private var listKey = ""
+    private lateinit var brandTitle: TextView
+    private val brandText = "RYZEN / VPN"
+    private var brandLength = 0
+    private var brandDeleting = false
+    private val brandAnimation = object : Runnable {
+        override fun run() {
+            if (!android.animation.ValueAnimator.areAnimatorsEnabled()) {
+                brandTitle.text = brandText
+                return
+            }
+            brandLength += if (brandDeleting) -1 else 1
+            brandLength = brandLength.coerceIn(0, brandText.length)
+            brandTitle.text = (brandText.take(brandLength) + "_").padEnd(brandText.length + 1, ' ')
+            val delay = when {
+                brandLength == brandText.length -> { brandDeleting = true; 2400L }
+                brandLength == 0 -> { brandDeleting = false; 650L }
+                brandDeleting -> 65L
+                else -> 135L
+            }
+            handler.postDelayed(this, delay)
+        }
+    }
     private val poll = object : Runnable {
         override fun run() { app.sample(); handler.postDelayed(this,1500) }
     }
@@ -214,7 +236,12 @@ class MainActivity : Activity() {
             }
         }
         setContentView(root)
-        root.addView(text("RYZEN  /  VPN",21f).apply { typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL); letterSpacing=.15f })
+        brandTitle=text(brandText,21f).apply {
+            typeface=Typeface.MONOSPACE; letterSpacing=.12f; setSingleLine()
+            contentDescription="RYZEN / VPN"
+            accessibilityLiveRegion=View.ACCESSIBILITY_LIVE_REGION_NONE
+        }
+        root.addView(brandTitle,LinearLayout.LayoutParams(-1,dp(32)))
         status=text("Disconnected",13f,Color.LTGRAY)
         root.addView(status,LinearLayout.LayoutParams(-1,dp(32)))
         globe=GlobeView(this).apply { onCountry={ chooseCountry(it) } }
@@ -308,8 +335,8 @@ class MainActivity : Activity() {
         globe.liveCountry=if(app.live) app.servers.find { it.id==app.activeId }?.country ?: -1 else -1
         globe.invalidate()
     }
-    override fun onResume() { super.onResume(); app.listener={render()}; render(); handler.post(poll) }
-    override fun onPause() { handler.removeCallbacks(poll); app.listener=null; super.onPause() }
+    override fun onResume() { super.onResume(); app.listener={render()}; render(); handler.post(poll); handler.removeCallbacks(brandAnimation); handler.postDelayed(brandAnimation,500) }
+    override fun onPause() { handler.removeCallbacks(poll); handler.removeCallbacks(brandAnimation); app.listener=null; super.onPause() }
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putInt("country",country); outState.putString("selected",selectedId)
         outState.putString("pendingId",pendingId); outState.putInt("pendingCountry",pendingCountry); outState.putString("pendingCity",pendingCity)
