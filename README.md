@@ -125,8 +125,31 @@ Core UI and connection code are in
 `app/src/main/java/com/personal/privatevpn/MainActivity.kt`. The VPN service is
 provided by the WireGuard dependency and merged into the app manifest.
 
+## Globe interface and server availability
+
+Version 0.2 adds a draggable globe, animated country focus, greyed-out unsupported
+countries, city profiles, flags, host addresses and a circular power button.
+Tap a highlighted country or use the country selector. Add a city and import its
+working WireGuard configuration. Existing single-country profiles migrate to
+an Imported location entry. The app does not infer geographic location from IP
+addresses, so enter the actual city and country of the server.
+
+The pulse appears only while the selected peer has a handshake within the last
+180 seconds. Speed values are measured tunnel traffic in Mbps, not maximum server
+capacity. An idle connection can show 0 Mbps. A recent handshake authenticates
+the peer but does not independently verify internet forwarding.
+
+No hosted servers are included. No free source with verified WireGuard endpoints
+in all three target countries has been established. Use your own servers or
+legitimate working configurations. Each country shows an empty state until a
+profile is imported.
+
 ## Validation status
 
-Source and manifest checks completed. APK compilation and device tunnel testing
-are pending. The development environment used to prepare this project had no
-Android SDK or Gradle installation.
+The 0.1 APK compiled and passed Android lint. The 0.2 release workflow additionally
+runs an Android 35 emulator launch check before publication. Physical-device VPN
+connectivity requires working server configurations and remains unverified.
+Debug builds from different runner instances may have different signing keys.
+If Android rejects an update due to a signature mismatch, export or retain your
+original profiles, uninstall the old app, install the new APK and import them
+again. Uninstalling removes app data.
